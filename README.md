@@ -1,7 +1,7 @@
 # Student Performance — MapReduce & Pig Analysis
 
 A Big Data project analyzing a 10,000-row student performance dataset using
-**3 Hadoop MapReduce jobs** (Python streaming) and **5 Apache Pig scripts**.
+**3 Hadoop MapReduce jobs** (Java, via Hadoop Streaming) and **5 Apache Pig scripts**.
 
 ## Dataset
 
@@ -19,14 +19,14 @@ project/
 │   └── students.csv
 ├── mapreduce/
 │   ├── job1_avg_gpa_by_region/
-│   │   ├── mapper.py
-│   │   └── reducer.py
+│   │   ├── Mapper.java
+│   │   └── Reducer.java
 │   ├── job2_pass_rate_by_school_type/
-│   │   ├── mapper.py
-│   │   └── reducer.py
+│   │   ├── Job2Mapper.java
+│   │   └── Job2Reducer.java
 │   └── job3_stress_motivation_by_parental_involvement/
-│       ├── mapper.py
-│       └── reducer.py
+│       ├── Job3Mapper.java
+│       └── Job3Reducer.java
 ├── pig/
 │   ├── 01_avg_gpa_by_region.pig
 │   ├── 02_study_hours_vs_stress.pig
@@ -56,6 +56,18 @@ project/
 | **04** | Average attendance rate by laptop access (yes/no) |
 | **05** | Average subject scores by school type × gender |
 
+## Tech Stack
+
+Hadoop (HDFS, MapReduce, Streaming) · Apache Pig · Java · Bash
+
+## Sample Output (Job 1, full dataset)
+
+| region | avg_gpa | students |
+|---|---|---|
+| rural | 3.109 | 2025 |
+| suburban | 3.125 | 4008 |
+| urban | 3.130 | 3967 |
+
 ## Setup
 
 1. Start HDFS and put the dataset on it:
@@ -80,10 +92,17 @@ Each Pig script also writes its result to `output/<script_name>/` via `STORE`.
 
 ## Notes
 
-- MapReduce mappers/reducers are plain Python 3 (Hadoop Streaming) — no
-  extra libraries needed on the cluster nodes.
+- MapReduce mappers/reducers are plain Java programs that read from stdin
+  and write to stdout (Hadoop Streaming). `run_mapreduce.sh` compiles them
+  with `javac` first, so only a JDK is needed — no extra libraries.
+- Quick local test without Hadoop:
+  `javac -d build mapreduce/*/*.java && cat data/students.csv | java -cp build Mapper | sort | java -cp build Reducer`
 - Pig scripts assume the CSV has been uploaded to HDFS at
   `/user/hadoop/students.csv`; edit the `LOAD` path in each `.pig` file if
   your cluster uses a different location.
 - The first data row is skipped in every job by filtering out the header
   (`student_id,...`).
+
+## Author
+
+**Abir Ahamed Omi** — CSE, Premier University, Chittagong
